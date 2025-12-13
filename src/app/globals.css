@@ -129,3 +129,56 @@
 [data-nextjs-dialog] {
   display: none !important;
 }
+
+/* Mobile-first improvements */
+@layer base {
+  /* Better touch targets for mobile */
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improved scrolling on iOS */
+  .smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Better focus states for accessibility */
+  .focus-pink {
+    @apply focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2;
+  }
+  
+  /* Mobile form improvements */
+  .mobile-form-field {
+    @apply h-12 px-4 text-base border-2 border-gray-200 rounded-lg;
+  }
+  
+  @media (min-width: 640px) {
+    .mobile-form-field {
+      @apply h-10 px-3 text-sm;
+    }
+  }
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  /* Ensure clickable elements are touch-friendly */
+  button, .btn, [role="button"] {
+    min-height: 44px;
+  }
+  
+  /* Better spacing for mobile cards */
+  .card-mobile {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Improved mobile form styling */
+  input[type="text"], 
+  input[type="email"], 
+  input[type="password"], 
+  textarea, 
+  select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}

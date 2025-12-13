@@ -262,14 +262,17 @@ export default function WorkLogsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-pink-600">Work Logs</h1>
-          <p className="text-pink-400">Track daily work progress and submissions</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-pink-600">Work Logs</h1>
+          <p className="text-sm sm:text-base text-pink-400">Track daily work progress and submissions</p>
         </div>
-        <Button className="bg-pink-500 hover:bg-pink-600 text-white" onClick={() => setShowForm(!showForm)}>
-          <Plus className="h-4 w-4 mr-2" />
+        <Button 
+          className="bg-pink-500 hover:bg-pink-600 text-white w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm" 
+          onClick={() => setShowForm(!showForm)}
+        >
+          <Plus className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />
           {showForm ? 'Cancel' : 'Add Work Log'}
         </Button>
       </div>
@@ -280,10 +283,10 @@ export default function WorkLogsPage() {
             <CardTitle>Submit Work Log</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <label htmlFor="event" className="block text-sm font-medium text-pink-700 mb-2">
+                  <label htmlFor="event" className="block text-sm font-medium text-pink-700 mb-3">
                     Select Event
                   </label>
                   <select
@@ -292,7 +295,7 @@ export default function WorkLogsPage() {
                     required
                     value={formData.event_id}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-pink-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2"
+                    className="flex h-12 sm:h-10 w-full rounded-md border border-pink-200 bg-white px-4 py-3 sm:px-3 sm:py-2 text-base sm:text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2"
                   >
                     <option value="">Choose an event</option>
                     {events.map((event) => (
@@ -304,7 +307,7 @@ export default function WorkLogsPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="task" className="block text-sm font-medium text-pink-700 mb-2">
+                  <label htmlFor="task" className="block text-sm font-medium text-pink-700 mb-3">
                     Select Task (Optional)
                   </label>
                   <select
@@ -312,7 +315,7 @@ export default function WorkLogsPage() {
                     name="task_id"
                     value={formData.task_id}
                     onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-pink-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2"
+                    className="flex h-12 sm:h-10 w-full rounded-md border border-pink-200 bg-white px-4 py-3 sm:px-3 sm:py-2 text-base sm:text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2"
                     disabled={!formData.event_id}
                   >
                     <option value="">Choose a task (optional)</option>
@@ -326,7 +329,7 @@ export default function WorkLogsPage() {
               </div>
 
               <div>
-                <label htmlFor="your_name" className="block text-sm font-medium text-pink-700 mb-2">
+                <label htmlFor="your_name" className="block text-sm font-medium text-pink-700 mb-3">
                   Your Name
                 </label>
                 <Input
@@ -337,31 +340,31 @@ export default function WorkLogsPage() {
                   value={formData.your_name}
                   onChange={handleInputChange}
                   placeholder="Enter your name"
-                  className="border-pink-200 focus:ring-pink-400 focus:border-pink-400"
+                  className="border-pink-200 focus:ring-pink-400 focus:border-pink-400 h-12 sm:h-10 px-4 sm:px-3 text-base sm:text-sm"
                 />
               </div>
 
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-pink-700 mb-2">
+                <label htmlFor="description" className="block text-sm font-medium text-pink-700 mb-3">
                   Work Description
                 </label>
                 <textarea
                   id="description"
                   name="description"
-                  rows={4}
+                  rows={5}
                   required
                   value={formData.description}
                   onChange={handleInputChange}
                   placeholder="Describe what work you completed"
-                  className="flex w-full rounded-md border border-pink-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-pink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2"
+                  className="flex w-full rounded-md border border-pink-200 bg-white px-4 py-3 sm:px-3 sm:py-2 text-base sm:text-sm ring-offset-white placeholder:text-pink-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 resize-none"
                 />
               </div>
 
-              <div className="flex space-x-4">
-                <Button type="submit" className="bg-pink-500 hover:bg-pink-600 text-white">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <Button type="submit" className="bg-pink-500 hover:bg-pink-600 text-white h-12 sm:h-10 text-base sm:text-sm font-medium">
                   Submit Work Log
                 </Button>
-                <Button type="button" variant="outline" className="border-violet-300 text-violet-600" onClick={() => setShowForm(false)}>
+                <Button type="button" variant="outline" className="border-violet-300 text-violet-600 h-12 sm:h-10 text-base sm:text-sm" onClick={() => setShowForm(false)}>
                   Cancel
                 </Button>
               </div>
@@ -390,47 +393,47 @@ export default function WorkLogsPage() {
               </Button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4 sm:space-y-6">
               {workLogs.map((log) => (
-                <div key={log.id} className="border border-pink-100 rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-pink-100 rounded-full">
-                        <FileText className="h-4 w-4 text-pink-600" />
+                <div key={log.id} className="border border-pink-100 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-4">
+                    <div className="flex items-start space-x-3 flex-1">
+                      <div className="p-2 bg-pink-100 rounded-full flex-shrink-0">
+                        <FileText className="h-5 w-5 sm:h-4 sm:w-4 text-pink-600" />
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-pink-500">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-pink-500 text-base sm:text-sm">
                           {log.event_name || 'Unknown Event'}
                         </h3>
                         {log.task_name && log.task_name !== 'General' && (
-                          <p className="text-sm text-black">Task: {log.task_name}</p>
+                          <p className="text-sm text-black mt-1">Task: {log.task_name}</p>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="text-right text-sm text-pink-500">
+                    <div className="flex items-center justify-between sm:justify-end gap-3">
+                      <div className="text-sm text-pink-500 flex-shrink-0">
                         {new Date(log.created_at).toLocaleDateString()}
                       </div>
-                      <div className="flex space-x-1">
+                      <div className="flex gap-2">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => startEditWorkLog(log)}
                           disabled={!canEditWorkLog(log)}
-                          className={canEditWorkLog(log) ? "text-pink-600 hover:text-pink-700" : "text-gray-400 cursor-not-allowed"}
+                          className={`${canEditWorkLog(log) ? "text-pink-600 hover:text-pink-700" : "text-gray-400 cursor-not-allowed"} h-9 w-9 sm:h-8 sm:w-8 p-0`}
                           title={canEditWorkLog(log) ? "Edit your work log" : "You can only edit your own work logs"}
                         >
-                          <Edit className="h-4 w-4" />
+                          <Edit className="h-5 w-5 sm:h-4 sm:w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => deleteWorkLog(log.id, log)}
                           disabled={deletingId === log.id || !canEditWorkLog(log)}
-                          className={canEditWorkLog(log) ? "text-red-600 hover:text-red-700" : "text-gray-400 cursor-not-allowed"}
+                          className={`${canEditWorkLog(log) ? "text-red-600 hover:text-red-700" : "text-gray-400 cursor-not-allowed"} h-9 w-9 sm:h-8 sm:w-8 p-0`}
                           title={canEditWorkLog(log) ? "Delete your work log" : "You can only delete your own work logs"}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-5 w-5 sm:h-4 sm:w-4" />
                         </Button>
                       </div>
                     </div>
@@ -439,45 +442,45 @@ export default function WorkLogsPage() {
                   {editingId === log.id ? (
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-pink-700 mb-2">
+                        <label className="block text-sm font-medium text-pink-700 mb-3">
                           Your Name
                         </label>
                         <Input
                           value={editData.your_name}
                           onChange={(e) => setEditData(prev => ({ ...prev, your_name: e.target.value }))}
-                          className="border-pink-200 focus:ring-pink-400 focus:border-pink-400"
+                          className="border-pink-200 focus:ring-pink-400 focus:border-pink-400 h-12 sm:h-10 px-4 sm:px-3 text-base sm:text-sm"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-pink-700 mb-2">
+                        <label className="block text-sm font-medium text-pink-700 mb-3">
                           Description
                         </label>
                         <textarea
                           value={editData.description}
                           onChange={(e) => setEditData(prev => ({ ...prev, description: e.target.value }))}
-                          rows={3}
-                          className="flex w-full rounded-md border border-pink-200 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2"
+                          rows={4}
+                          className="flex w-full rounded-md border border-pink-200 bg-white px-4 py-3 sm:px-3 sm:py-2 text-base sm:text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-400 focus-visible:ring-offset-2 resize-none"
                         />
                       </div>
-                      <div className="flex space-x-2">
-                        <Button onClick={saveEditWorkLog} size="sm" className="bg-pink-500 hover:bg-pink-600">
-                          <Save className="h-4 w-4 mr-2" />
+                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
+                        <Button onClick={saveEditWorkLog} className="bg-pink-500 hover:bg-pink-600 h-12 sm:h-9 text-base sm:text-sm font-medium">
+                          <Save className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />
                           Save
                         </Button>
-                        <Button onClick={cancelEditWorkLog} variant="outline" size="sm">
-                          <X className="h-4 w-4 mr-2" />
+                        <Button onClick={cancelEditWorkLog} variant="outline" className="h-12 sm:h-9 text-base sm:text-sm">
+                          <X className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />
                           Cancel
                         </Button>
                       </div>
                     </div>
                   ) : (
                     <div>
-                      <p className="text-black mb-4">{log.description}</p>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4 text-sm text-black">
+                      <p className="text-black mb-4 text-base sm:text-sm leading-relaxed">{log.description}</p>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-black">
                           <div className="flex items-center">
-                            <User className="h-4 w-4 mr-1" />
-                            {log.person}
+                            <User className="h-4 w-4 mr-2 flex-shrink-0" />
+                            <span className="font-medium">{log.person}</span>
                             {canEditWorkLog(log) && (
                               <Badge variant="outline" className="ml-2 text-xs text-green-600 border-green-200">
                                 Your log
@@ -485,7 +488,7 @@ export default function WorkLogsPage() {
                             )}
                           </div>
                           {log.attachment_path && (
-                            <Badge variant="secondary">
+                            <Badge variant="secondary" className="self-start sm:self-auto">
                               📎 Attachment
                             </Badge>
                           )}

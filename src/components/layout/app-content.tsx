@@ -47,9 +47,19 @@ export function AppContent({ children }: { children: React.ReactNode }) {
         <div className="hidden sm:block">
           <Navbar />
         </div>
-        {/* Mobile profile avatar at top right */}
-        <MobileProfileAvatar />
-        <main className="container mx-auto px-4 py-8 pb-20 sm:pb-8">
+        {/* Mobile logo and profile avatar on the same row */}
+        <div className="sm:hidden flex items-center justify-between pt-4 pb-2 px-4">
+          <img
+            src="/hult-logo.jpg"
+            alt="Hult Logo"
+            className="h-12 w-auto object-contain drop-shadow"
+            style={{ maxWidth: 80 }}
+          />
+          <div>
+            <MobileProfileAvatar />
+          </div>
+        </div>
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 sm:pb-8 max-w-7xl">
           {children}
         </main>
         {/* Bottom navbar only on mobile */}

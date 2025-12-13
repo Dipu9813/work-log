@@ -14,6 +14,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   const router = useRouter()
   const [resolvedParams, setResolvedParams] = useState<{ id: string } | null>(null)
   const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     date: '',
@@ -122,6 +123,66 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     })
   }
 
+  const handleDelete = async () => {
+    if (!resolvedParams?.id || !formData.name) return
+
+    const confirmMessage = `Are you sure you want to delete "${formData.name}"? This will also delete all associated tasks, ideas, and work logs. This action cannot be undone.`
+    
+    if (!confirm(confirmMessage)) {
+      return
+    }
+
+    setDeleting(true)
+    
+    // Use setTimeout to prevent UI blocking
+    setTimeout(async () => {
+      try {
+        console.log('🗑️ Starting optimized event deletion...')
+        
+        // Delete associated data in parallel for better performance
+        console.log('🔄 Deleting associated data in parallel...')
+        const [workLogsResult, tasksResult, ideasResult] = await Promise.allSettled([
+          supabase.from('work_logs').delete().eq('event_id', resolvedParams.id),
+          supabase.from('tasks').delete().eq('event_id', resolvedParams.id),
+          supabase.from('ideas').delete().eq('event_id', resolvedParams.id)
+        ])
+        
+        // Log results but don't fail if some deletions had issues
+        console.log('📊 Associated data deletion results:', {
+          workLogs: workLogsResult,
+          tasks: tasksResult,
+          ideas: ideasResult
+        })
+        
+        // Delete the event
+        console.log('🔄 Deleting event...')
+        const { error } = await supabase.from('events').delete().eq('id', resolvedParams.id)
+        
+        if (error) {
+          console.error('❌ Event deletion error:', error)
+          throw error
+        }
+        
+        console.log('✅ Event deleted successfully')
+        toast({
+          title: 'Success',
+          description: 'Event deleted successfully',
+        })
+        
+        router.push('/events')
+      } catch (error) {
+        console.error('💥 Error deleting event:', error)
+        toast({
+          title: 'Error',
+          description: `Failed to delete event: ${(error as any)?.message || 'Unknown error'}`,
+          variant: 'destructive',
+        })
+      } finally {
+        setDeleting(false)
+      }
+    }, 50) // Small delay to allow UI to update
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -195,15 +256,26 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
               />
             </div>
 
-            <div className="flex space-x-4">
-              <Button type="submit">
-                Update Event
-              </Button>
-              <Link href={`/events/${resolvedParams?.id}`}>
-                <Button variant="outline">
-                  Cancel
+            <div className="flex justify-between">
+              <div className="flex space-x-4">
+                <Button type="submit">
+                  Update Event
                 </Button>
-              </Link>
+                <Link href={`/events/${resolvedParams?.id}`}>
+                  <Button variant="outline">
+                    Cancel
+                  </Button>
+                </Link>
+              </div>
+              <Button 
+                type="button"
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={deleting || loading}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {deleting ? 'Deleting...' : 'Delete Event'}
+              </Button>
             </div>
           </form>
         </CardContent>

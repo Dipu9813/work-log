@@ -473,59 +473,64 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center space-x-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4">
         <Link href="/events">
-          <Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 mr-2" />Back</Button>
+          <Button variant="ghost" className="self-start h-11 sm:h-9 px-4 sm:px-3 text-base sm:text-sm">
+            <ArrowLeft className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />Back
+          </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-pink-600 drop-shadow-sm">{event.name}</h1>
-          <div className="flex items-center space-x-4 text-gray-600 mt-2">
-            <Calendar className="h-4 w-4 mr-1" />
-            <span>{new Date(event.date).toLocaleDateString()}</span>
-            <span>•</span>
-            <span>{event.description}</span>
+          <h1 className="text-2xl sm:text-3xl font-bold text-pink-600 drop-shadow-sm leading-tight">{event.name}</h1>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-gray-600 mt-3">
+            <div className="flex items-center">
+              <Calendar className="h-4 w-4 mr-2" />
+              <span className="text-base sm:text-sm">{new Date(event.date).toLocaleDateString()}</span>
+            </div>
+            <span className="hidden sm:inline">•</span>
+            <span className="text-base sm:text-sm">{event.description}</span>
           </div>
         </div>
       </div>
 
-      <Tabs defaultValue="tasks">
-        <TabsList>
-          <TabsTrigger value="tasks">Tasks</TabsTrigger>
-          <TabsTrigger value="planning">Planning Board</TabsTrigger>
-          <TabsTrigger value="logs">Work Logs</TabsTrigger>
+      <Tabs defaultValue="tasks" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 h-12 sm:h-10 mb-6 sm:mb-4">
+          <TabsTrigger value="tasks" className="text-sm sm:text-xs font-medium">Tasks</TabsTrigger>
+          <TabsTrigger value="planning" className="text-sm sm:text-xs font-medium">Planning</TabsTrigger>
+          <TabsTrigger value="logs" className="text-sm sm:text-xs font-medium">Work Logs</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="tasks">
+        <TabsContent value="tasks" className="mt-0">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Task Assignment</CardTitle>
-              <Button size="sm" onClick={() => setShowAddTask(true)}>
-                <Plus className="h-4 w-4 mr-2" />Add Task
+            <CardHeader className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+              <CardTitle className="text-lg sm:text-base">Task Assignment</CardTitle>
+              <Button className="w-full sm:w-auto h-12 sm:h-9 text-base sm:text-sm" onClick={() => setShowAddTask(true)}>
+                <Plus className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />Add Task
               </Button>
             </CardHeader>
             <CardContent>
               {showAddTask && (
-                <Card className="mb-4">
-                  <CardContent className="pt-4 space-y-4">
+                <Card className="mb-6">
+                  <CardContent className="pt-6 space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
                         Task Name
                       </label>
                       <Input
                         value={newTask.name}
                         onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
                         placeholder="Enter task name"
+                        className="h-12 sm:h-10 px-4 sm:px-3 text-base sm:text-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
                         Assign To
                       </label>
                       <select
                         value={newTask.assigned_to}
                         onChange={(e) => setNewTask({ ...newTask, assigned_to: e.target.value })}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full border border-gray-300 rounded-md px-4 py-3 sm:px-3 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-12 sm:h-10"
                       >
                         <option value="">Select team member...</option>
                         {teamMembers.map((member) => (
@@ -544,25 +549,25 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                         )}
                       </div>
                     </div>
-                    <div className="flex space-x-2">
-                      <Button onClick={createTask}>Save</Button>
-                      <Button variant="outline" onClick={() => setShowAddTask(false)}>Cancel</Button>
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
+                      <Button onClick={createTask} className="h-12 sm:h-10 text-base sm:text-sm font-medium">Save</Button>
+                      <Button variant="outline" onClick={() => setShowAddTask(false)} className="h-12 sm:h-10 text-base sm:text-sm">Cancel</Button>
                     </div>
                   </CardContent>
                 </Card>
               )}
 
-              <div className="space-y-4">
+              <div className="space-y-4 sm:space-y-6">
                 {tasks.map((task) => (
-                  <div key={task.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div key={task.id} className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between p-4 sm:p-6 border rounded-lg">
                     <div className="flex-1">
-                      <h3 className="font-medium">{task.name}</h3>
+                      <h3 className="font-medium text-base sm:text-sm mb-2">{task.name}</h3>
                       <p className="text-sm text-gray-600">Assigned to: {task.assignee_name}</p>
                     </div>
                     <select
                       value={task.status}
                       onChange={(e) => updateTaskStatus(task.id, e.target.value as any)}
-                      className="text-sm border rounded px-2 py-1"
+                      className="w-full sm:w-auto text-base sm:text-sm border rounded-md px-4 py-3 sm:px-2 sm:py-1 h-12 sm:h-auto focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="pending">Pending</option>
                       <option value="in_progress">In Progress</option>
@@ -580,36 +585,36 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
           </Card>
         </TabsContent>
 
-        <TabsContent value="planning">
+        <TabsContent value="planning" className="mt-0">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Planning Board</CardTitle>
-              <Button size="sm" onClick={() => setShowAddIdea(true)}>
-                <Plus className="h-4 w-4 mr-2" />Add Idea
+            <CardHeader className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+              <CardTitle className="text-lg sm:text-base">Planning Board</CardTitle>
+              <Button className="w-full sm:w-auto h-12 sm:h-9 text-base sm:text-sm" onClick={() => setShowAddIdea(true)}>
+                <Plus className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />Add Idea
               </Button>
             </CardHeader>
             <CardContent>
               {showAddIdea && (
-                <Card className="mb-4">
-                  <CardContent className="pt-4 space-y-4">
-
+                <Card className="mb-6">
+                  <CardContent className="pt-6 space-y-6">
                     <Input
                       value={newIdea.idea_text}
                       onChange={(e) => setNewIdea({ ...newIdea, idea_text: e.target.value })}
                       placeholder="Your idea"
+                      className="h-12 sm:h-10 px-4 sm:px-3 text-base sm:text-sm"
                     />
-                    <div className="flex space-x-2">
-                      <Button onClick={createIdea}>Save</Button>
-                      <Button variant="outline" onClick={() => setShowAddIdea(false)}>Cancel</Button>
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
+                      <Button onClick={createIdea} className="h-12 sm:h-10 text-base sm:text-sm font-medium">Save</Button>
+                      <Button variant="outline" onClick={() => setShowAddIdea(false)} className="h-12 sm:h-10 text-base sm:text-sm">Cancel</Button>
                     </div>
                   </CardContent>
                 </Card>
               )}
-              <div className="space-y-4">
+              <div className="space-y-4 sm:space-y-6">
                 {ideas.map((idea) => (
-                  <div key={idea.id} className="p-4 border rounded-lg">
-                    <h4 className="font-medium">{idea.person_name}</h4>
-                    <p className="text-gray-700 mt-1">{idea.idea_text}</p>
+                  <div key={idea.id} className="p-4 sm:p-6 border rounded-lg">
+                    <h4 className="font-medium text-base sm:text-sm mb-2">{idea.person_name}</h4>
+                    <p className="text-gray-700 text-base sm:text-sm leading-relaxed">{idea.idea_text}</p>
                   </div>
                 ))}
                 {ideas.length === 0 && (
@@ -622,24 +627,24 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
           </Card>
         </TabsContent>
 
-        <TabsContent value="logs">
+        <TabsContent value="logs" className="mt-0">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Work Logs</CardTitle>
-              <Button size="sm" onClick={() => setShowAddWorkLog(true)}>
-                <Plus className="h-4 w-4 mr-2" />Add Work Log
+            <CardHeader className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+              <CardTitle className="text-lg sm:text-base">Work Logs</CardTitle>
+              <Button className="w-full sm:w-auto h-12 sm:h-9 text-base sm:text-sm" onClick={() => setShowAddWorkLog(true)}>
+                <Plus className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />Add Work Log
               </Button>
             </CardHeader>
             <CardContent>
               {showAddWorkLog && (
-                <Card className="mb-4">
+                <Card className="mb-6">
                   <CardHeader>
-                    <CardTitle>Add Work Log</CardTitle>
+                    <CardTitle className="text-lg sm:text-base">Add Work Log</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-6">
                     {/* Your Name field */}
                     <div>
-                      <label htmlFor="your_name" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="your_name" className="block text-sm font-medium text-gray-700 mb-3">
                         Your Name
                       </label>
                       <Input
@@ -649,17 +654,13 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                         value={newWorkLog.your_name}
                         onChange={(e) => setNewWorkLog({ ...newWorkLog, your_name: e.target.value })}
                         placeholder="Enter your name"
-                        className="border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        className="border-gray-300 focus:ring-blue-500 focus:border-blue-500 h-12 sm:h-10 px-4 sm:px-3 text-base sm:text-sm"
                       />
                     </div>
 
-
-
-
-
                     {/* Description */}
                     <div>
-                      <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-3">
                         Work Description
                       </label>
                       <textarea
@@ -667,20 +668,20 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                         value={newWorkLog.description}
                         onChange={(e) => setNewWorkLog({ ...newWorkLog, description: e.target.value })}
                         placeholder="Describe what work you completed..."
-                        className="flex min-h-[100px] w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                        rows={4}
+                        className="flex min-h-[120px] w-full rounded-md border border-gray-300 bg-white px-4 py-3 sm:px-3 sm:py-2 text-base sm:text-sm ring-offset-white placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 resize-none"
+                        rows={5}
                         required
                       />
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex space-x-2 pt-2">
-                      <Button onClick={createWorkLog} disabled={!newWorkLog.description.trim()}>
-                        <Save className="h-4 w-4 mr-2" />
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-2 pt-2">
+                      <Button onClick={createWorkLog} disabled={!newWorkLog.description.trim()} className="h-12 sm:h-10 text-base sm:text-sm font-medium">
+                        <Save className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />
                         Add Work Log
                       </Button>
-                      <Button variant="outline" onClick={() => setShowAddWorkLog(false)}>
-                        <X className="h-4 w-4 mr-2" />
+                      <Button variant="outline" onClick={() => setShowAddWorkLog(false)} className="h-12 sm:h-10 text-base sm:text-sm">
+                        <X className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />
                         Cancel
                       </Button>
                     </div>
@@ -688,85 +689,87 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 </Card>
               )}
               {workLogs.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-4 sm:space-y-6">
                   {workLogs.map((log) => (
-                    <div key={log.id} className="p-4 border rounded-lg">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center space-x-2">
-                          <User className="h-4 w-4 text-gray-600" />
-                          <h4 className="font-medium">{log.person}</h4>
-                          {canEditWorkLog(log) && (
-                            <Badge variant="outline" className="text-xs text-green-600 border-green-200">
-                              Your log
-                            </Badge>
-                          )}
+                    <div key={log.id} className="p-4 sm:p-6 border rounded-lg">
+                      <div className="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between mb-4">
+                        <div className="flex items-start space-x-3 flex-1">
+                          <User className="h-5 w-5 sm:h-4 sm:w-4 text-gray-600 flex-shrink-0 mt-1" />
+                          <div className="flex-1">
+                            <h4 className="font-medium text-base sm:text-sm">{log.person}</h4>
+                            {canEditWorkLog(log) && (
+                              <Badge variant="outline" className="text-xs text-green-600 border-green-200 mt-1">
+                                Your log
+                              </Badge>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <p className="text-sm text-gray-500">
+                        <div className="flex items-center justify-between sm:justify-end gap-3">
+                          <p className="text-sm text-gray-500 flex-shrink-0">
                             {new Date(log.created_at).toLocaleDateString()}
                           </p>
-                          <div className="flex space-x-1">
+                          <div className="flex gap-2">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => startEditWorkLog(log)}
                               disabled={!canEditWorkLog(log)}
-                              className={canEditWorkLog(log) ? "text-blue-600 hover:text-blue-700" : "text-gray-400 cursor-not-allowed"}
+                              className={`${canEditWorkLog(log) ? "text-blue-600 hover:text-blue-700" : "text-gray-400 cursor-not-allowed"} h-9 w-9 sm:h-8 sm:w-8 p-0`}
                               title={canEditWorkLog(log) ? "Edit your work log" : "You can only edit your own work logs"}
                             >
-                              <Edit className="h-4 w-4" />
+                              <Edit className="h-5 w-5 sm:h-4 sm:w-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => deleteWorkLog(log.id, log)}
                               disabled={deletingWorkLogId === log.id || !canEditWorkLog(log)}
-                              className={canEditWorkLog(log) ? "text-red-600 hover:text-red-700" : "text-gray-400 cursor-not-allowed"}
+                              className={`${canEditWorkLog(log) ? "text-red-600 hover:text-red-700" : "text-gray-400 cursor-not-allowed"} h-9 w-9 sm:h-8 sm:w-8 p-0`}
                               title={canEditWorkLog(log) ? "Delete your work log" : "You can only delete your own work logs"}
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-5 w-5 sm:h-4 sm:w-4" />
                             </Button>
                           </div>
                         </div>
                       </div>
                       
                       {editingWorkLogId === log.id ? (
-                        <div className="space-y-4">
+                        <div className="space-y-4 sm:space-y-6">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-3">
                               Your Name
                             </label>
                             <Input
                               value={editWorkLogData.your_name}
                               onChange={(e) => setEditWorkLogData(prev => ({ ...prev, your_name: e.target.value }))}
-                              className="border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                              className="border-gray-300 focus:ring-blue-500 focus:border-blue-500 h-12 sm:h-10 px-4 sm:px-3 text-base sm:text-sm"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-3">
                               Description
                             </label>
                             <textarea
                               value={editWorkLogData.description}
                               onChange={(e) => setEditWorkLogData(prev => ({ ...prev, description: e.target.value }))}
-                              rows={3}
-                              className="flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                              rows={4}
+                              className="flex w-full rounded-md border border-gray-300 bg-white px-4 py-3 sm:px-3 sm:py-2 text-base sm:text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 resize-none"
                             />
                           </div>
-                          <div className="flex space-x-2">
-                            <Button onClick={saveEditWorkLog} size="sm" className="bg-blue-600 hover:bg-blue-700">
-                              <Save className="h-4 w-4 mr-2" />
+                          <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
+                            <Button onClick={saveEditWorkLog} className="bg-blue-600 hover:bg-blue-700 h-12 sm:h-9 text-base sm:text-sm font-medium">
+                              <Save className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />
                               Save
                             </Button>
-                            <Button onClick={cancelEditWorkLog} variant="outline" size="sm">
-                              <X className="h-4 w-4 mr-2" />
+                            <Button onClick={cancelEditWorkLog} variant="outline" className="h-12 sm:h-9 text-base sm:text-sm">
+                              <X className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />
                               Cancel
                             </Button>
                           </div>
                         </div>
                       ) : (
                         <div>
-                          <p className="text-gray-700">{log.description}</p>
+                          <p className="text-gray-700 text-base sm:text-sm leading-relaxed">{log.description}</p>
                         </div>
                       )}
                     </div>

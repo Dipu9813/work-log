@@ -13,18 +13,18 @@ export default function Home() {
   const { hasPermission } = useUserPermissions()
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600">{config.welcome_message}</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-base sm:text-base text-gray-600 mt-2">{config.welcome_message}</p>
         </div>
         {config.show_setup_guide && hasPermission('manage_config') && (
-          <Link href="/setup">
-            <Button variant="outline" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
+          <Link href="/setup" className="w-full sm:w-auto">
+            <Button variant="outline" className="flex items-center justify-center gap-2 w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm">
+              <Settings className="h-5 w-5 sm:h-4 sm:w-4" />
               Setup Guide
-              <ExternalLink className="h-3 w-3" />
+              <ExternalLink className="h-4 w-4 sm:h-3 sm:w-3" />
             </Button>
           </Link>
         )}
@@ -32,7 +32,7 @@ export default function Home() {
 
       <StatsCards />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         <div className="lg:col-span-2">
           <EventsGrid />
         </div>

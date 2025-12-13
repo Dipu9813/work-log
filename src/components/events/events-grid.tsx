@@ -67,35 +67,54 @@ export function EventsGrid() {
     }
 
     setDeletingId(eventId)
-    try {
-      // Delete associated data first
-      await supabase.from('work_logs').delete().eq('event_id', eventId)
-      await supabase.from('tasks').delete().eq('event_id', eventId)
-      await supabase.from('ideas').delete().eq('event_id', eventId)
-      
-      // Delete the event
-      const { error } = await supabase.from('events').delete().eq('id', eventId)
-      
-      if (error) {
-        throw error
+    
+    // Use setTimeout to prevent UI blocking
+    setTimeout(async () => {
+      try {
+        console.log('🗑️ Starting optimized event deletion from grid...', eventId)
+        
+        // Delete associated data in parallel for better performance
+        console.log('🔄 Deleting associated data in parallel...')
+        const [workLogsResult, tasksResult, ideasResult] = await Promise.allSettled([
+          supabase.from('work_logs').delete().eq('event_id', eventId),
+          supabase.from('tasks').delete().eq('event_id', eventId),
+          supabase.from('ideas').delete().eq('event_id', eventId)
+        ])
+        
+        // Log results but continue even if some deletions had issues
+        console.log('📊 Associated data deletion results:', {
+          workLogs: workLogsResult,
+          tasks: tasksResult, 
+          ideas: ideasResult
+        })
+        
+        // Delete the event
+        console.log('🔄 Deleting event...')
+        const { error } = await supabase.from('events').delete().eq('id', eventId)
+        
+        if (error) {
+          console.error('❌ Event deletion error:', error)
+          throw error
+        }
+        
+        console.log('✅ Event deleted successfully')
+        toast({
+          title: 'Success',
+          description: 'Event deleted successfully',
+        })
+        
+        refetch()
+      } catch (error) {
+        console.error('💥 Error deleting event:', error)
+        toast({
+          title: 'Error',
+          description: `Failed to delete event: ${(error as any)?.message || 'Unknown error'}`,
+          variant: 'destructive',
+        })
+      } finally {
+        setDeletingId(null)
       }
-      
-      toast({
-        title: 'Success',
-        description: 'Event deleted successfully',
-      })
-      
-      refetch()
-    } catch (error) {
-      console.error('Error deleting event:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to delete event',
-        variant: 'destructive',
-      })
-    } finally {
-      setDeletingId(null)
-    }
+    }, 50) // Small delay to allow UI to update
   }
 
   if (loading) {
@@ -117,23 +136,23 @@ export function EventsGrid() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Recent Events</CardTitle>
-        <Link href="/events/new">
-          <Button size="sm">
-            <Plus className="h-4 w-4 mr-2" />
+      <CardHeader className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+        <CardTitle className="text-xl sm:text-lg">Recent Events</CardTitle>
+        <Link href="/events/new" className="w-full sm:w-auto">
+          <Button className="w-full sm:w-auto h-12 sm:h-9 text-base sm:text-sm">
+            <Plus className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />
             New Event
           </Button>
         </Link>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-4 sm:space-y-6">
           {events.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500 mb-4">No events created yet</p>
+            <div className="text-center py-12 px-4">
+              <p className="text-gray-500 mb-6 text-base">No events created yet</p>
               <Link href="/events/new">
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
+                <Button className="w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm">
+                  <Plus className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />
                   Create Your First Event
                 </Button>
               </Link>
@@ -144,48 +163,53 @@ export function EventsGrid() {
               const stats = eventStats[event.id] || { tasksCount: 0 }
               
               return (
-                <div key={event.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between">
+                <div key={event.id} className="border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow">
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+                        <h3 className="text-lg font-semibold text-gray-900 leading-tight">
                           {event.name}
                         </h3>
                         <Badge className={statusColors[status as keyof typeof statusColors]}>
                           {status}
                         </Badge>
                       </div>
-                      <p className="text-gray-600 text-sm mb-3">{event.description}</p>
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <p className="text-gray-600 text-sm sm:text-base mb-4 leading-relaxed">{event.description}</p>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-500">
                         <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-1" />
+                          <Calendar className="h-4 w-4 mr-2" />
                           {new Date(event.date).toLocaleDateString()}
                         </div>
-                        <div>
+                        <div className="flex items-center">
+                          <Users className="h-4 w-4 mr-2" />
                           {stats.tasksCount} tasks
                         </div>
                       </div>
                     </div>
-                    <div className="flex space-x-2">
-                      <Link href={`/events/${event.id}`}>
-                        <Button variant="outline" size="sm">
+                    <div className="flex flex-row sm:flex-col gap-2 sm:gap-3 sm:items-end">
+                      <Link href={`/events/${event.id}`} className="flex-1 sm:flex-none">
+                        <Button variant="outline" className="w-full sm:w-auto h-11 sm:h-9 text-sm font-medium">
                           View Details
                         </Button>
                       </Link>
-                      <Link href={`/events/${event.id}/edit`}>
-                        <Button variant="outline" size="sm">
-                          <Edit className="h-4 w-4" />
+                      <div className="flex gap-2 sm:gap-4 sm:mt-2">
+                        <Link href={`/events/${event.id}/edit`}>
+                          <Button
+                            variant="outline"
+                            className="h-11 w-11 sm:h-12 sm:w-12 p-0 border-pink-200 sm:bg-pink-50 sm:hover:bg-pink-100 sm:border-2 sm:shadow-sm sm:transition sm:duration-150 sm:ease-in-out sm:flex sm:items-center sm:justify-center"
+                          >
+                            <Edit className="h-5 w-5 sm:h-6 sm:w-6 text-pink-500" />
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="outline"
+                          onClick={() => handleDeleteEvent(event.id, event.name)}
+                          disabled={deletingId === event.id}
+                          className="text-red-600 hover:text-red-700 sm:bg-red-50 sm:hover:bg-red-100 h-11 w-11 sm:h-12 sm:w-12 p-0 border-pink-200 sm:border-2 sm:shadow-sm sm:transition sm:duration-150 sm:ease-in-out sm:flex sm:items-center sm:justify-center"
+                        >
+                          <Trash2 className="h-5 w-5 sm:h-6 sm:w-6" />
                         </Button>
-                      </Link>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleDeleteEvent(event.id, event.name)}
-                        disabled={deletingId === event.id}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      </div>
                     </div>
                   </div>
                 </div>

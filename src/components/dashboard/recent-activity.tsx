@@ -48,31 +48,34 @@ export function RecentActivity() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recent Activity</CardTitle>
+        <CardTitle className="text-lg sm:text-base">Recent Activity</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-4 sm:space-y-6">
           {recentActivities.length === 0 ? (
-            <div className="text-center py-4">
-              <p className="text-sm text-gray-500">No recent activity</p>
+            <div className="text-center py-8 px-4">
+              <p className="text-base sm:text-sm text-gray-500">No recent activity</p>
             </div>
           ) : (
             recentActivities.map((activity) => {
               const Icon = activity.icon
               return (
-                <div key={activity.id} className="flex items-center space-x-4">
-                  <div className={`p-2 rounded-full bg-gray-100`}>
-                    <Icon className={`h-4 w-4 ${activity.color}`} />
+                <div key={activity.id} className="flex items-start space-x-4">
+                  <div className={`p-2 sm:p-2 rounded-full bg-gray-100 flex-shrink-0`}>
+                    <Icon className={`h-5 w-5 sm:h-4 sm:w-4 ${activity.color}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-base sm:text-sm font-medium text-gray-900 mb-1">
                       {activity.user}
                     </p>
-                    <p className="text-sm text-gray-500 truncate">
+                    <p className="text-sm sm:text-xs text-gray-500 leading-relaxed">
                       {activity.action}
                     </p>
+                    <p className="text-xs text-gray-400 mt-2 sm:hidden">
+                      {activity.time}
+                    </p>
                   </div>
-                  <div className="text-xs text-gray-400">
+                  <div className="text-xs text-gray-400 hidden sm:block flex-shrink-0">
                     {activity.time}
                   </div>
                 </div>
