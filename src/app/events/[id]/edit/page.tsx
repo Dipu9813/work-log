@@ -57,9 +57,9 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
 
       if (data) {
         setFormData({
-          name: data.name || '',
-          date: data.date ? new Date(data.date).toISOString().split('T')[0] : '',
-          description: data.description || ''
+          name: (data as any).name || '',
+          date: (data as any).date ? new Date((data as any).date).toISOString().split('T')[0] : '',
+          description: (data as any).description || ''
         })
       }
     } catch (error) {
@@ -80,7 +80,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     if (!resolvedParams?.id) return
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('events')
         .update({
           name: formData.name,

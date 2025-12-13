@@ -196,15 +196,19 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         console.log('🔄 Trying alternative query to get all profiles...')
         
         // Try with explicit RLS bypass (if available)
-        const { data: allData, error: allError } = await supabase
-          .rpc('get_all_profiles')
-          .then(result => result)
-          .catch(() => {
-            // If RPC doesn't exist, try a different select approach
-            return supabase
-              .from('profiles')
-              .select('id, full_name, email')
-          })
+        let allData, allError
+        try {
+          const rpcResult = await supabase.rpc('get_all_profiles')
+          allData = rpcResult.data
+          allError = rpcResult.error
+        } catch {
+          // If RPC doesn't exist, try a different select approach
+          const fallbackResult = await supabase
+            .from('profiles')
+            .select('id, full_name, email')
+          allData = fallbackResult.data
+          allError = fallbackResult.error
+        }
 
         if (allData && allData.length > (data?.length || 0)) {
           console.log('✅ Alternative query found more profiles:', allData.length)
