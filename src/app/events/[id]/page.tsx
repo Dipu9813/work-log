@@ -18,7 +18,7 @@ import { toast } from '@/components/ui/use-toast'
 
 interface Task {
   id: string
-  task_name: string
+  name: string
   assigned_to: string | null
   priority: 'low' | 'medium' | 'high'
   status: 'pending' | 'in_progress' | 'completed'
@@ -77,7 +77,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   })
   const [newWorkLog, setNewWorkLog] = useState({
     description: '',
-    task_id: ''
+    task_id: '',
+    hours_spent: ''
   })
   const [showAddTask, setShowAddTask] = useState(false)
   const [showAddIdea, setShowAddIdea] = useState(false)
