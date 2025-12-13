@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Calendar, Home, Users, FileText, LogOut, User, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -54,9 +55,17 @@ export function Navbar() {
     <nav className="bg-white shadow-sm border-b border-pink-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex">
-            <Link href="/" className="flex-shrink-0 flex items-center">
-              <span className="text-xl font-bold text-pink-700">{config.app_name}</span>
+          <div className="flex items-center">
+            <Link href="/" className="flex-shrink-0 flex items-center mr-3">
+              <Image
+                src="/hult-logo.jpg"
+                alt="Hult Logo"
+                width={36}
+                height={36}
+                className="h-9 w-auto object-contain"
+                priority
+              />
+              <span className="ml-2 text-xl font-bold text-pink-700">{config.app_name}</span>
             </Link>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               {filteredNavigation.map((item) => {

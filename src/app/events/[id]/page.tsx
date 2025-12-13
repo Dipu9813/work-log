@@ -78,17 +78,24 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const [newWorkLog, setNewWorkLog] = useState({
     description: '',
     task_id: '',
-    hours_spent: ''
+    hours_spent: '',
+    your_name: ''
   })
   const [showAddTask, setShowAddTask] = useState(false)
   const [showAddIdea, setShowAddIdea] = useState(false)
   const [showAddWorkLog, setShowAddWorkLog] = useState(false)
+  const [editingWorkLogId, setEditingWorkLogId] = useState<string | null>(null)
+  const [editWorkLogData, setEditWorkLogData] = useState({ description: '', your_name: '' })
+  const [deletingWorkLogId, setDeletingWorkLogId] = useState<string | null>(null)
   const { hasPermission } = useUserPermissions()
 
   useEffect(() => {
-    fetchEventData()
-    fetchTeamMembers()
-    fetchCurrentUser()
+    const loadData = async () => {
+      await fetchEventData()
+      await fetchCurrentUser()
+      await fetchTeamMembers()
+    }
+    loadData()
   }, [resolvedParams.id])
 
   const fetchEventData = async () => {
@@ -173,10 +180,59 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   const fetchTeamMembers = async () => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('id, full_name, email')
-    setTeamMembers(data || [])
+    try {
+      console.log('🔍 Fetching team members from profiles table...')
+      
+      // First, let's try the normal query
+      let { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .order('full_name', { ascending: true })
+
+      console.log('📊 Profiles query result:', { data, error, count: data?.length })
+
+      // If we got fewer than expected, try to bypass RLS by using a different approach
+      if (data && data.length < 5) {
+        console.log('🔄 Trying alternative query to get all profiles...')
+        
+        // Try with explicit RLS bypass (if available)
+        const { data: allData, error: allError } = await supabase
+          .rpc('get_all_profiles')
+          .then(result => result)
+          .catch(() => {
+            // If RPC doesn't exist, try a different select approach
+            return supabase
+              .from('profiles')
+              .select('id, full_name, email')
+          })
+
+        if (allData && allData.length > (data?.length || 0)) {
+          console.log('✅ Alternative query found more profiles:', allData.length)
+          data = allData
+          error = allError
+        }
+      }
+
+      if (error) {
+        console.error('❌ RLS or permission error:', error)
+        toast({
+          title: 'Permission Issue', 
+          description: `Only showing ${data?.length || 0} of 5 team members. Check Row Level Security policies in Supabase.`,
+          variant: 'destructive'
+        })
+      }
+
+      console.log(`✅ Final result: ${data?.length || 0} profiles available`)
+      setTeamMembers(data || [])
+      
+    } catch (error) {
+      console.error('💥 Exception:', error)
+      toast({
+        title: 'Error',
+        description: 'An unexpected error occurred while loading team members',
+        variant: 'destructive'
+      })
+    }
   }
 
   const fetchCurrentUser = async () => {
@@ -188,7 +244,14 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
           .select('full_name, email')
           .eq('id', user.id)
           .single()
-        setCurrentUser(profile)
+        
+        // Store both user and profile data
+        const userData = { ...profile, id: user.id, email: user.email }
+        setCurrentUser(userData)
+        
+        // Auto-populate the name field
+        const userName = profile?.full_name || profile?.email || user.email || 'Your Name'
+        setNewWorkLog(prev => ({ ...prev, your_name: userName }))
       }
     } catch (error) {
       console.error('Error fetching current user:', error)
@@ -260,7 +323,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         task_id: newWorkLog.task_id || undefined,
         description: newWorkLog.description.trim(),
         hours_spent: newWorkLog.hours_spent ? parseFloat(newWorkLog.hours_spent) : undefined,
-        person: currentUser?.full_name || currentUser?.email || 'Unknown User'
+        person: newWorkLog.your_name.trim() || currentUser?.full_name || currentUser?.email || 'Unknown User'
       }
 
       const result = await createWorkLogFromHook(workLogData)
@@ -270,7 +333,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
           title: 'Success',
           description: 'Work log added successfully!',
         })
-        setNewWorkLog({ description: '', hours_spent: '', task_id: '' })
+        setNewWorkLog({ description: '', hours_spent: '', task_id: '', your_name: currentUser?.full_name || currentUser?.email || '' })
         setShowAddWorkLog(false)
         // No need to call fetchEventData() as useWorkLogs handles the refresh
       } else {
@@ -287,6 +350,108 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         description: 'An error occurred while adding the work log.',
         variant: 'destructive',
       })
+    }
+  }
+
+  // Check if current user can edit this work log
+  const canEditWorkLog = (log: any) => {
+    if (!currentUser) return false
+    return log.person_id === currentUser.id
+  }
+
+  const startEditWorkLog = (log: any) => {
+    if (!canEditWorkLog(log)) {
+      toast({
+        title: 'Permission Denied',
+        description: 'You can only edit your own work logs.',
+        variant: 'destructive',
+      })
+      return
+    }
+    
+    setEditingWorkLogId(log.id)
+    setEditWorkLogData({
+      your_name: log.name || log.person || '',
+      description: log.description || ''
+    })
+  }
+
+  const saveEditWorkLog = async () => {
+    if (!editingWorkLogId) return
+
+    try {
+      const { error } = await supabase
+        .from('work_logs')
+        .update({
+          name: editWorkLogData.your_name.trim(),
+          description: editWorkLogData.description.trim()
+        })
+        .eq('id', editingWorkLogId)
+
+      if (error) {
+        throw error
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Work log updated successfully',
+      })
+
+      setEditingWorkLogId(null)
+      setEditWorkLogData({ your_name: '', description: '' })
+    } catch (error) {
+      console.error('Error updating work log:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to update work log',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const cancelEditWorkLog = () => {
+    setEditingWorkLogId(null)
+    setEditWorkLogData({ your_name: '', description: '' })
+  }
+
+  const deleteWorkLog = async (logId: string, log: any) => {
+    if (!canEditWorkLog(log)) {
+      toast({
+        title: 'Permission Denied',
+        description: 'You can only delete your own work logs.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (!confirm('Are you sure you want to delete this work log?')) {
+      return
+    }
+
+    setDeletingWorkLogId(logId)
+    try {
+      const { error } = await supabase
+        .from('work_logs')
+        .delete()
+        .eq('id', logId)
+
+      if (error) {
+        throw error
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Work log deleted successfully',
+      })
+    } catch (error) {
+      console.error('Error deleting work log:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to delete work log',
+        variant: 'destructive',
+      })
+    } finally {
+      setDeletingWorkLogId(null)
     }
   }
 
@@ -339,23 +504,42 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
               {showAddTask && (
                 <Card className="mb-4">
                   <CardContent className="pt-4 space-y-4">
-                    <Input
-                      value={newTask.name}
-                      onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
-                      placeholder="Task name"
-                    />
-                    <select
-                      value={newTask.assigned_to}
-                      onChange={(e) => setNewTask({ ...newTask, assigned_to: e.target.value })}
-                      className="w-full border rounded px-3 py-2"
-                    >
-                      <option value="">Unassigned</option>
-                      {teamMembers.map((member) => (
-                        <option key={member.id} value={member.id}>
-                          {member.full_name || member.email}
-                        </option>
-                      ))}
-                    </select>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Task Name
+                      </label>
+                      <Input
+                        value={newTask.name}
+                        onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
+                        placeholder="Enter task name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Assign To
+                      </label>
+                      <select
+                        value={newTask.assigned_to}
+                        onChange={(e) => setNewTask({ ...newTask, assigned_to: e.target.value })}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select team member...</option>
+                        {teamMembers.map((member) => (
+                          <option key={member.id} value={member.id}>
+                            {member.full_name || member.email}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {teamMembers.length === 0 ? (
+                          <p>No team members found. Create user accounts to assign tasks to others.</p>
+                        ) : teamMembers.length === 1 ? (
+                          <p>Only you are available. Have other team members sign up to assign tasks to them.</p>
+                        ) : (
+                          <p>{teamMembers.length} team members available for assignment.</p>
+                        )}
+                      </div>
+                    </div>
                     <div className="flex space-x-2">
                       <Button onClick={createTask}>Save</Button>
                       <Button variant="outline" onClick={() => setShowAddTask(false)}>Cancel</Button>
@@ -449,12 +633,20 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     <CardTitle>Add Work Log</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* User info display */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <p className="text-sm text-blue-700">
-                        <User className="h-4 w-4 inline mr-2" />
-                        Submitting as: <strong>{currentUser?.full_name || currentUser?.email || 'Loading...'}</strong>
-                      </p>
+                    {/* Your Name field */}
+                    <div>
+                      <label htmlFor="your_name" className="block text-sm font-medium text-gray-700 mb-2">
+                        Your Name
+                      </label>
+                      <Input
+                        id="your_name"
+                        type="text"
+                        required
+                        value={newWorkLog.your_name}
+                        onChange={(e) => setNewWorkLog({ ...newWorkLog, your_name: e.target.value })}
+                        placeholder="Enter your name"
+                        className="border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                      />
                     </div>
 
 
@@ -495,11 +687,84 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 <div className="space-y-4">
                   {workLogs.map((log) => (
                     <div key={log.id} className="p-4 border rounded-lg">
-                      <h4 className="font-medium">{log.person}</h4>
-                      <p className="text-gray-700">{log.description}</p>
-                      <p className="text-sm text-gray-500 mt-2">
-                        {new Date(log.created_at).toLocaleDateString()}
-                      </p>
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center space-x-2">
+                          <User className="h-4 w-4 text-gray-600" />
+                          <h4 className="font-medium">{log.person}</h4>
+                          {canEditWorkLog(log) && (
+                            <Badge variant="outline" className="text-xs text-green-600 border-green-200">
+                              Your log
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <p className="text-sm text-gray-500">
+                            {new Date(log.created_at).toLocaleDateString()}
+                          </p>
+                          <div className="flex space-x-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => startEditWorkLog(log)}
+                              disabled={!canEditWorkLog(log)}
+                              className={canEditWorkLog(log) ? "text-blue-600 hover:text-blue-700" : "text-gray-400 cursor-not-allowed"}
+                              title={canEditWorkLog(log) ? "Edit your work log" : "You can only edit your own work logs"}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteWorkLog(log.id, log)}
+                              disabled={deletingWorkLogId === log.id || !canEditWorkLog(log)}
+                              className={canEditWorkLog(log) ? "text-red-600 hover:text-red-700" : "text-gray-400 cursor-not-allowed"}
+                              title={canEditWorkLog(log) ? "Delete your work log" : "You can only delete your own work logs"}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {editingWorkLogId === log.id ? (
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Your Name
+                            </label>
+                            <Input
+                              value={editWorkLogData.your_name}
+                              onChange={(e) => setEditWorkLogData(prev => ({ ...prev, your_name: e.target.value }))}
+                              className="border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Description
+                            </label>
+                            <textarea
+                              value={editWorkLogData.description}
+                              onChange={(e) => setEditWorkLogData(prev => ({ ...prev, description: e.target.value }))}
+                              rows={3}
+                              className="flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                            />
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button onClick={saveEditWorkLog} size="sm" className="bg-blue-600 hover:bg-blue-700">
+                              <Save className="h-4 w-4 mr-2" />
+                              Save
+                            </Button>
+                            <Button onClick={cancelEditWorkLog} variant="outline" size="sm">
+                              <X className="h-4 w-4 mr-2" />
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-gray-700">{log.description}</p>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

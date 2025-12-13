@@ -3,15 +3,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, Users, Plus } from 'lucide-react'
+import { Calendar, Users, Plus, Edit, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useEvents } from '@/hooks/use-database'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase-client'
+import { toast } from '@/components/ui/use-toast'
 
 export function EventsGrid() {
-  const { events, loading } = useEvents()
+  const { events, loading, refetch } = useEvents()
   const [eventStats, setEventStats] = useState<Record<string, { tasksCount: number }>>({})
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
 
   useEffect(() => {
@@ -57,6 +59,43 @@ export function EventsGrid() {
     active: 'bg-green-100 text-green-800',
     completed: 'bg-gray-100 text-gray-800',
     upcoming: 'bg-blue-100 text-blue-800'
+  }
+
+  const handleDeleteEvent = async (eventId: string, eventName: string) => {
+    if (!confirm(`Are you sure you want to delete "${eventName}"? This will also delete all associated tasks, ideas, and work logs.`)) {
+      return
+    }
+
+    setDeletingId(eventId)
+    try {
+      // Delete associated data first
+      await supabase.from('work_logs').delete().eq('event_id', eventId)
+      await supabase.from('tasks').delete().eq('event_id', eventId)
+      await supabase.from('ideas').delete().eq('event_id', eventId)
+      
+      // Delete the event
+      const { error } = await supabase.from('events').delete().eq('id', eventId)
+      
+      if (error) {
+        throw error
+      }
+      
+      toast({
+        title: 'Success',
+        description: 'Event deleted successfully',
+      })
+      
+      refetch()
+    } catch (error) {
+      console.error('Error deleting event:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to delete event',
+        variant: 'destructive',
+      })
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   if (loading) {
@@ -127,11 +166,27 @@ export function EventsGrid() {
                         </div>
                       </div>
                     </div>
-                    <Link href={`/events/${event.id}`}>
-                      <Button variant="outline" size="sm">
-                        View Details
+                    <div className="flex space-x-2">
+                      <Link href={`/events/${event.id}`}>
+                        <Button variant="outline" size="sm">
+                          View Details
+                        </Button>
+                      </Link>
+                      <Link href={`/events/${event.id}/edit`}>
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleDeleteEvent(event.id, event.name)}
+                        disabled={deletingId === event.id}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
-                    </Link>
+                    </div>
                   </div>
                 </div>
               )

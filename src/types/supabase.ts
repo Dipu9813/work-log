@@ -186,7 +186,9 @@ export interface Database {
           id: string
           event_id: string
           task_id: string | null
-          person: string
+          person_id: string | null
+          person: string | null
+          name: string
           description: string
           hours_spent: number | null
           attachment_path: string | null
@@ -196,7 +198,9 @@ export interface Database {
           id?: string
           event_id: string
           task_id?: string | null
-          person: string
+          person_id?: string | null
+          person?: string | null
+          name: string
           description: string
           hours_spent?: number | null
           attachment_path?: string | null
@@ -206,7 +210,9 @@ export interface Database {
           id?: string
           event_id?: string
           task_id?: string | null
-          person?: string
+          person_id?: string | null
+          person?: string | null
+          name?: string
           description?: string
           hours_spent?: number | null
           attachment_path?: string | null

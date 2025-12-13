@@ -70,6 +70,7 @@ export function useEvents() {
   }
 }
 
+
 export function useWorkLogs() {
   const [workLogs, setWorkLogs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -95,27 +96,8 @@ export function useWorkLogs() {
           data.map(async (log) => {
             const enrichedLog = { ...log }
             
-            // Fetch person name from profiles table using person_id
-            if (log.person_id) {
-              try {
-                const { data: profile, error: profileError } = await supabase
-                  .from('profiles')
-                  .select('full_name, email')
-                  .eq('id', log.person_id)
-                  .single()
-                
-                if (profileError) {
-                  console.warn('Error fetching profile for work log:', profileError)
-                }
-                
-                enrichedLog.person = profile?.full_name || profile?.email || 'Unknown Person'
-              } catch (error) {
-                console.warn('Error fetching person name:', error)
-                enrichedLog.person = 'Unknown Person'
-              }
-            } else {
-              enrichedLog.person = 'Unknown Person'
-            }
+            // Use the name column directly - much simpler!
+            enrichedLog.person = log.name || 'Unknown User'
             
             // Fetch event name
             if (log.event_id) {
@@ -209,12 +191,12 @@ export function useWorkLogs() {
       
       console.log('✅ User authenticated:', user.email)
 
-      // The actual table uses person_id (foreign key to profiles) not person (text)
-      // Since person names are passed as text, we need to use the authenticated user's ID
+      // Store both person_id (for relationships) and name (for display from "Your name" field)
       const workLogEntry = {
         event_id: workLogData.event_id,
         task_id: workLogData.task_id || null,
-        person_id: user.id, // Use authenticated user's ID instead of person name
+        person_id: user.id, // Use authenticated user's ID for RLS and relationships
+        name: workLogData.person, // Store the actual name from "Your name" field in the name column
         description: workLogData.description
       }
 

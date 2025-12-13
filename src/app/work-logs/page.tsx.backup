@@ -27,6 +27,7 @@ export default function WorkLogsPage() {
   const { events } = useEvents()
   const [tasks, setTasks] = useState<any[]>([])
 
+
   // Fetch current user on component mount
   useEffect(() => {
     fetchCurrentUser()
@@ -48,11 +49,7 @@ export default function WorkLogsPage() {
           .select('full_name, email')
           .eq('id', user.id)
           .single()
-        
-        // Store both user and profile data
-        const userData = { ...profile, id: user.id, email: user.email }
-        setCurrentUser(userData)
-        
+        setCurrentUser(profile)
         // Auto-populate the name field
         const userName = profile?.full_name || profile?.email || user.email || 'Your Name'
         setFormData(prev => ({ ...prev, your_name: userName }))
@@ -156,22 +153,7 @@ export default function WorkLogsPage() {
     })
   }
 
-  // Check if current user can edit this work log
-  const canEditWorkLog = (log: any) => {
-    if (!currentUser) return false
-    return log.person_id === currentUser.id
-  }
-
   const startEditWorkLog = (log: any) => {
-    if (!canEditWorkLog(log)) {
-      toast({
-        title: 'Permission Denied',
-        description: 'You can only edit your own work logs.',
-        variant: 'destructive',
-      })
-      return
-    }
-    
     setEditingId(log.id)
     setEditData({
       your_name: log.name || log.person || '',
@@ -218,16 +200,7 @@ export default function WorkLogsPage() {
     setEditData({ your_name: '', description: '' })
   }
 
-  const deleteWorkLog = async (logId: string, log: any) => {
-    if (!canEditWorkLog(log)) {
-      toast({
-        title: 'Permission Denied',
-        description: 'You can only delete your own work logs.',
-        variant: 'destructive',
-      })
-      return
-    }
-
+  const deleteWorkLog = async (logId: string) => {
     if (!confirm('Are you sure you want to delete this work log?')) {
       return
     }
@@ -341,6 +314,8 @@ export default function WorkLogsPage() {
                 />
               </div>
 
+
+
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-pink-700 mb-2">
                   Work Description
@@ -357,13 +332,15 @@ export default function WorkLogsPage() {
                 />
               </div>
 
+              {/* Proof Upload removed as requested */}
+
               <div className="flex space-x-4">
-                <Button type="submit" className="bg-pink-500 hover:bg-pink-600 text-white">
+                  <Button type="submit" className="bg-pink-500 hover:bg-pink-600 text-white">
                   Submit Work Log
                 </Button>
-                <Button type="button" variant="outline" className="border-violet-300 text-violet-600" onClick={() => setShowForm(false)}>
-                  Cancel
-                </Button>
+                  <Button type="button" variant="outline" className="border-violet-300 text-violet-600" onClick={() => setShowForm(false)}>
+                    Cancel
+                  </Button>
               </div>
             </form>
           </CardContent>
@@ -384,7 +361,7 @@ export default function WorkLogsPage() {
           ) : workLogs.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-pink-400 mb-4">No work logs submitted yet</p>
-              <Button className="bg-pink-500 hover:bg-pink-600 text-white" onClick={() => setShowForm(true)}>
+                <Button className="bg-pink-500 hover:bg-pink-600 text-white" onClick={() => setShowForm(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Submit Your First Work Log
               </Button>
@@ -416,19 +393,16 @@ export default function WorkLogsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => startEditWorkLog(log)}
-                          disabled={!canEditWorkLog(log)}
-                          className={canEditWorkLog(log) ? "text-pink-600 hover:text-pink-700" : "text-gray-400 cursor-not-allowed"}
-                          title={canEditWorkLog(log) ? "Edit your work log" : "You can only edit your own work logs"}
+                          className="text-pink-600 hover:text-pink-700"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => deleteWorkLog(log.id, log)}
-                          disabled={deletingId === log.id || !canEditWorkLog(log)}
-                          className={canEditWorkLog(log) ? "text-red-600 hover:text-red-700" : "text-gray-400 cursor-not-allowed"}
-                          title={canEditWorkLog(log) ? "Delete your work log" : "You can only delete your own work logs"}
+                          onClick={() => deleteWorkLog(log.id)}
+                          disabled={deletingId === log.id}
+                          className="text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -478,11 +452,6 @@ export default function WorkLogsPage() {
                           <div className="flex items-center">
                             <User className="h-4 w-4 mr-1" />
                             {log.person}
-                            {canEditWorkLog(log) && (
-                              <Badge variant="outline" className="ml-2 text-xs text-green-600 border-green-200">
-                                Your log
-                              </Badge>
-                            )}
                           </div>
                           {log.attachment_path && (
                             <Badge variant="secondary">
@@ -494,7 +463,7 @@ export default function WorkLogsPage() {
                     </div>
                   )}
                 </div>
-              ))}
+              ))
             </div>
           )}
         </CardContent>
