@@ -1,4 +1,11 @@
-'use client'
+"use client"
+
+// --- Work Log Deletion ---
+import { Trash2 } from 'lucide-react'
+
+// ...existing code...
+
+
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -20,6 +27,47 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     date: '',
     description: ''
   })
+  // Work log state (moved inside component)
+  const [workLogs, setWorkLogs] = useState<any[]>([]);
+  const [deletingWorkLogId, setDeletingWorkLogId] = useState<string | null>(null);
+  // Fetch work logs for this event
+  useEffect(() => {
+    const fetchWorkLogs = async () => {
+      if (!resolvedParams?.id) return;
+      const { data, error } = await supabase
+        .from('work_logs')
+        .select('*')
+        .eq('event_id', resolvedParams.id)
+        .order('created_at', { ascending: false });
+      if (!error && data) setWorkLogs(data);
+    };
+    if (resolvedParams?.id) fetchWorkLogs();
+  }, [resolvedParams, deletingWorkLogId]);
+
+  // Work log delete handler
+  const handleDeleteWorkLog = (logId: string) => {
+    if (!confirm('Are you sure you want to delete this work log?')) return;
+    setDeletingWorkLogId(logId);
+    // Optimistically remove from UI
+    setWorkLogs((prev) => prev.filter((log) => log.id !== logId));
+    // Run DB delete in background
+    (async () => {
+      try {
+        const { error, data } = await supabase.from('work_logs').delete().eq('id', logId);
+        if (error) {
+          console.error('Supabase delete error:', error, 'logId:', logId);
+          throw error;
+        }
+        toast({ title: 'Success', description: 'Work log deleted.' });
+      } catch (error: any) {
+        console.error('Failed to delete work log:', error, 'logId:', logId);
+        toast({ title: 'Error', description: `Failed to delete work log: ${error?.message || error}`, variant: 'destructive' });
+        // Optionally restore the log if needed (not implemented here)
+      } finally {
+        setDeletingWorkLogId(null);
+      }
+    })();
+  };
 
   useEffect(() => {
     const resolveParams = async () => {
@@ -123,65 +171,38 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     })
   }
 
-  const handleDelete = async () => {
-    if (!resolvedParams?.id || !formData.name) return
-
-    const confirmMessage = `Are you sure you want to delete "${formData.name}"? This will also delete all associated tasks, ideas, and work logs. This action cannot be undone.`
-    
-    if (!confirm(confirmMessage)) {
-      return
-    }
-
-    setDeleting(true)
-    
-    // Use setTimeout to prevent UI blocking
-    setTimeout(async () => {
-      try {
-        console.log('🗑️ Starting optimized event deletion...')
-        
-        // Delete associated data in parallel for better performance
-        console.log('🔄 Deleting associated data in parallel...')
-        const [workLogsResult, tasksResult, ideasResult] = await Promise.allSettled([
-          supabase.from('work_logs').delete().eq('event_id', resolvedParams.id),
-          supabase.from('tasks').delete().eq('event_id', resolvedParams.id),
-          supabase.from('ideas').delete().eq('event_id', resolvedParams.id)
-        ])
-        
-        // Log results but don't fail if some deletions had issues
-        console.log('📊 Associated data deletion results:', {
-          workLogs: workLogsResult,
-          tasks: tasksResult,
-          ideas: ideasResult
-        })
-        
-        // Delete the event
-        console.log('🔄 Deleting event...')
-        const { error } = await supabase.from('events').delete().eq('id', resolvedParams.id)
-        
-        if (error) {
-          console.error('❌ Event deletion error:', error)
-          throw error
-        }
-        
-        console.log('✅ Event deleted successfully')
-        toast({
-          title: 'Success',
-          description: 'Event deleted successfully',
-        })
-        
-        router.push('/events')
-      } catch (error) {
-        console.error('💥 Error deleting event:', error)
-        toast({
-          title: 'Error',
-          description: `Failed to delete event: ${(error as any)?.message || 'Unknown error'}`,
-          variant: 'destructive',
-        })
-      } finally {
-        setDeleting(false)
+  // Delete event and all associated data
+  const handleDeleteEvent = async () => {
+    if (!resolvedParams?.id || !formData.name) return;
+    const confirmMessage = `Are you sure you want to delete "${formData.name}"? This will also delete all associated tasks, ideas, and work logs. This action cannot be undone.`;
+    if (!confirm(confirmMessage)) return;
+    setDeleting(true);
+    try {
+      // Delete associated work logs, tasks, and ideas first
+      const [workLogsResult, tasksResult, ideasResult] = await Promise.allSettled([
+        supabase.from('work_logs').delete().eq('event_id', resolvedParams.id),
+        supabase.from('tasks').delete().eq('event_id', resolvedParams.id),
+        supabase.from('ideas').delete().eq('event_id', resolvedParams.id)
+      ]);
+      // Log results for debugging
+      console.log('Associated data deletion results:', { workLogsResult, tasksResult, ideasResult });
+      // Delete the event itself
+      const { error } = await supabase.from('events').delete().eq('id', resolvedParams.id);
+      if (error) {
+        console.error('Event deletion error:', error);
+        toast({ title: 'Error', description: `Failed to delete event: ${error.message || error}`, variant: 'destructive' });
+        setDeleting(false);
+        return;
       }
-    }, 50) // Small delay to allow UI to update
-  }
+      toast({ title: 'Success', description: 'Event deleted successfully' });
+      router.push('/events');
+    } catch (error: any) {
+      console.error('Error deleting event:', error);
+      toast({ title: 'Error', description: `Failed to delete event: ${error?.message || error}`, variant: 'destructive' });
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -270,7 +291,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
               <Button 
                 type="button"
                 variant="destructive"
-                onClick={handleDelete}
+                onClick={handleDeleteEvent}
                 disabled={deleting || loading}
                 className="bg-red-600 hover:bg-red-700"
               >
@@ -278,6 +299,61 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
               </Button>
             </div>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Work Logs Section */}
+      <Card className="max-w-2xl">
+        <CardHeader>
+          <CardTitle>Work Logs</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {workLogs.length === 0 ? (
+            <div className="text-gray-500 text-center py-6">No work logs for this event.</div>
+          ) : (
+            <div className="space-y-4">
+              {workLogs.map((log) => (
+                <div key={log.id} className="flex items-center justify-between border rounded px-4 py-3">
+                  <div>
+                    <div className="font-medium text-pink-700">{log.person}</div>
+                    <div className="text-gray-700 text-sm mt-1">{log.description}</div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {/* Edit button (optional, if you have edit functionality) */}
+                    {/* <Button
+                      variant="ghost"
+                      size="icon"
+                      className="hidden md:inline-flex text-blue-500 hover:text-blue-700 p-2"
+                      title="Edit work log"
+                    >
+                      <Edit className="h-5 w-5" />
+                    </Button> */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteWorkLog(log.id)}
+                      disabled={deletingWorkLogId === log.id}
+                      className="text-red-600 hover:text-red-700 p-2 transition-colors duration-150 hidden md:inline-flex"
+                      title="Delete work log"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
+                    {/* Mobile: show as before */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteWorkLog(log.id)}
+                      disabled={deletingWorkLogId === log.id}
+                      className="text-red-600 hover:text-red-700 md:hidden"
+                      title="Delete work log"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

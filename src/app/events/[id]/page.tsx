@@ -692,7 +692,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 <div className="space-y-4 sm:space-y-6">
                   {workLogs.map((log) => (
                     <div key={log.id} className="p-4 sm:p-6 border rounded-lg">
-                      <div className="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between mb-4">
+                      <div className="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between mb-2">
                         <div className="flex items-start space-x-3 flex-1">
                           <User className="h-5 w-5 sm:h-4 sm:w-4 text-gray-600 flex-shrink-0 mt-1" />
                           <div className="flex-1">
@@ -704,33 +704,35 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center justify-between sm:justify-end gap-3">
-                          <p className="text-sm text-gray-500 flex-shrink-0">
+                        <div className="flex flex-col items-end">
+                          <span className="text-sm text-gray-500 flex-shrink-0">
                             {new Date(log.created_at).toLocaleDateString()}
-                          </p>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => startEditWorkLog(log)}
-                              disabled={!canEditWorkLog(log)}
-                              className={`${canEditWorkLog(log) ? "text-blue-600 hover:text-blue-700" : "text-gray-400 cursor-not-allowed"} h-9 w-9 sm:h-8 sm:w-8 p-0`}
-                              title={canEditWorkLog(log) ? "Edit your work log" : "You can only edit your own work logs"}
-                            >
-                              <Edit className="h-5 w-5 sm:h-4 sm:w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => deleteWorkLog(log.id, log)}
-                              disabled={deletingWorkLogId === log.id || !canEditWorkLog(log)}
-                              className={`${canEditWorkLog(log) ? "text-red-600 hover:text-red-700" : "text-gray-400 cursor-not-allowed"} h-9 w-9 sm:h-8 sm:w-8 p-0`}
-                              title={canEditWorkLog(log) ? "Delete your work log" : "You can only delete your own work logs"}
-                            >
-                              <Trash2 className="h-5 w-5 sm:h-4 sm:w-4" />
-                            </Button>
-                          </div>
+                          </span>
                         </div>
+                      </div>
+                      <div className="flex gap-2 sm:gap-4 items-center justify-end mt-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => startEditWorkLog(log)}
+                          disabled={!canEditWorkLog(log)}
+                          className={`${canEditWorkLog(log)
+                            ? "h-11 w-11 sm:h-12 sm:w-12 p-0 border-pink-200 sm:bg-pink-50 sm:hover:bg-pink-100 sm:border-2 sm:shadow-sm sm:transition sm:duration-150 sm:ease-in-out sm:flex sm:items-center sm:justify-center"
+                            : "h-11 w-11 sm:h-12 sm:w-12 p-0 border-gray-200 bg-gray-50 cursor-not-allowed"}`}
+                          title={canEditWorkLog(log) ? "Edit your work log" : "You can only edit your own work logs"}
+                        >
+                          <Edit className="h-5 w-5 sm:h-6 sm:w-6 text-pink-500" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => deleteWorkLog(log.id, log)}
+                          disabled={deletingWorkLogId === log.id || !canEditWorkLog(log)}
+                          className={`${canEditWorkLog(log)
+                            ? "text-red-600 hover:text-red-700 sm:bg-red-50 sm:hover:bg-red-100 h-11 w-11 sm:h-12 sm:w-12 p-0 border-pink-200 sm:border-2 sm:shadow-sm sm:transition sm:duration-150 sm:ease-in-out sm:flex sm:items-center sm:justify-center"
+                            : "h-11 w-11 sm:h-12 sm:w-12 p-0 border-gray-200 bg-gray-50 cursor-not-allowed text-gray-400"}`}
+                          title={canEditWorkLog(log) ? "Delete your work log" : "You can only delete your own work logs"}
+                        >
+                          <Trash2 className="h-5 w-5 sm:h-6 sm:w-6" />
+                        </Button>
                       </div>
                       
                       {editingWorkLogId === log.id ? (
