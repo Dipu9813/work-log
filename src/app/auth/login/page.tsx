@@ -13,6 +13,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showAnim, setShowAnim] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const router = useRouter()
   const { user, signIn } = useAuth()
 
@@ -20,6 +22,7 @@ export default function LoginPage() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setSubmitting(true)
 
     try {
       const result = await signIn(email, password)
@@ -28,13 +31,15 @@ export default function LoginPage() {
         setError(result.error.message || 'An error occurred during login')
       } else {
         setError('')
-        router.push('/')
+        setShowAnim(false)
+        router.push('/auth/login-success')
       }
     } catch (error) {
       setError('An unexpected error occurred')
       console.error('Login error:', error)
     } finally {
       setLoading(false)
+      setSubmitting(false)
     }
   }
 
@@ -42,6 +47,16 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
+          <div className="flex flex-col items-center justify-center">
+            {showAnim && (
+              <img
+                src="/Login_character_Hello_20251214100256.gif"
+                alt="Hello Animation"
+                className="w-28 h-28 mb-2"
+                style={{ margin: '0 auto' }}
+              />
+            )}
+          </div>
           <CardTitle className="text-2xl text-center">Sign in</CardTitle>
           <CardDescription className="text-center">
             Enter your email and password to access your account
@@ -70,7 +85,17 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onFocus={() => setShowAnim(true)}
+                onBlur={(e) => {
+                  // Only hide animation if not submitting and password is empty
+                  if (!submitting && e.target.value.length === 0) {
+                    setShowAnim(false)
+                  }
+                }}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  setShowAnim(e.target.value.length > 0)
+                }}
                 placeholder="Enter your password"
                 required
               />

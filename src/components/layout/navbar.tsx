@@ -4,6 +4,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Calendar, Home, Users, FileText, LogOut, User, Settings } from 'lucide-react'
+import Lottie from 'lottie-react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/auth-context'
 import { useNavigation, useUserPermissions, useAppConfig } from '@/hooks/use-config'
@@ -95,9 +97,25 @@ export function Navbar() {
                 {user?.user_metadata?.full_name || user?.email}
               </span>
             </Link>
-            <Button variant="ghost" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
+            <Button
+              variant="ghost"
+              size="lg"
+              onClick={handleSignOut}
+              className="relative h-16 w-48 text-lg group overflow-hidden flex items-center justify-center"
+            >
+              {/* Animation absolutely centered, only visible on hover */}
+              <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <img
+                  src="/Animation_-_1700989645104_20251214093310.gif"
+                  alt="Sign Out Animation"
+                  className="h-10 w-10 object-contain opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{ display: 'inline-block' }}
+                />
+              </span>
+              {/* Text fades out on hover */}
+              <span className="transition-opacity duration-300 group-hover:opacity-0 inline-block z-10">
+                Sign Out
+              </span>
             </Button>
           </div>
         </div>
