@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 // @ts-ignore
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -19,12 +20,13 @@ import { toast } from '@/components/ui/use-toast'
 interface Task {
   id: string
   name: string
-  assigned_to: string | null
+  assigned_to?: string | null // legacy, for backward compatibility
+  assignees?: string[] // new: array of profile IDs
   priority: 'low' | 'medium' | 'high'
   status: 'pending' | 'in_progress' | 'completed'
   deadline: string | null
   created_at: string
-  assignee_name?: string
+  assignee_names?: string[] // new: array of names
 }
 
 interface Idea {
@@ -67,7 +69,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const workLogs = allWorkLogs.filter(log => log.event_id === resolvedParams.id)
   const [newTask, setNewTask] = useState({
     name: '',
-    assigned_to: '',
+    assignees: [] as string[],
     priority: 'medium' as 'low' | 'medium' | 'high',
     deadline: '',
     status: 'pending' as 'pending' | 'in_progress' | 'completed'
@@ -122,40 +124,25 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         console.error('Error fetching tasks:', tasksError)
         setTasks([])
       } else if (tasksData) {
-        // Fetch assignee names separately
-        const tasksWithNames = await Promise.all(
+        // Fetch all assignees for each task
+        const tasksWithAssignees = await Promise.all(
           tasksData.map(async (task) => {
-            if (task.assigned_to) {
-              try {
-                const { data: profile, error: profileError } = await supabase
-                  .from('profiles')
-                  .select('full_name')
-                  .eq('id', task.assigned_to)
-                  .single()
-                
-                if (profileError) {
-                  console.warn('Error fetching profile for task:', profileError)
-                }
-                
-                return {
-                  ...task,
-                  assignee_name: profile?.full_name || 'Unknown User'
-                }
-              } catch (error) {
-                console.warn('Error fetching assignee name:', error)
-                return {
-                  ...task,
-                  assignee_name: 'Unknown User'
-                }
-              }
+            // Get all assignees for this task
+            const { data: assigneesData, error: assigneesError } = await supabase
+              .from('task_assignees')
+              .select('profile_id, profiles(full_name)')
+              .eq('task_id', task.id)
+            let assignee_names: string[] = []
+            if (!assigneesError && assigneesData) {
+              assignee_names = assigneesData.map((a: any) => a.profiles?.full_name || 'Unknown User')
             }
             return {
               ...task,
-              assignee_name: 'Unassigned'
+              assignee_names
             }
           })
         )
-        setTasks(tasksWithNames)
+        setTasks(tasksWithAssignees)
       } else {
         setTasks([])
       }
@@ -265,21 +252,34 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const createTask = async () => {
     if (!newTask.name.trim()) return
 
-    const { error } = await supabase.from('tasks').insert([{
-      event_id: resolvedParams.id,
-      name: newTask.name,
-      assigned_to: newTask.assigned_to || null,
-      priority: newTask.priority,
-      status: newTask.status,
-      deadline: newTask.deadline || null
-    }])
+    // Insert the task (without assigned_to)
+    const { data: taskInsertData, error: taskInsertError } = await supabase.from('tasks').insert([
+      {
+        event_id: resolvedParams.id,
+        name: newTask.name,
+        priority: newTask.priority,
+        status: newTask.status,
+        deadline: newTask.deadline || null
+      }
+    ]).select('id')
 
-    if (error) {
-      console.error('Error creating task:', error)
+    if (taskInsertError) {
+      console.error('Error creating task:', taskInsertError)
       return
     }
 
-    setNewTask({ name: '', assigned_to: '', priority: 'medium', deadline: '', status: 'pending' })
+    const taskId = taskInsertData?.[0]?.id
+    if (taskId && newTask.assignees && newTask.assignees.length > 0) {
+      // Insert all assignees into task_assignees
+      const assigneeRows = newTask.assignees.map(profile_id => ({ task_id: taskId, profile_id }))
+      const { error: assigneeError } = await supabase.from('task_assignees').insert(assigneeRows)
+      if (assigneeError) {
+        console.error('Error assigning members to task:', assigneeError)
+        // Optionally show a toast here
+      }
+    }
+
+    setNewTask({ name: '', assignees: [], priority: 'medium', deadline: '', status: 'pending' })
     setShowAddTask(false)
     fetchEventData()
   }
@@ -527,26 +527,36 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                       <label className="block text-sm font-medium text-gray-700 mb-3">
                         Assign To
                       </label>
-                      <select
-                        value={newTask.assigned_to}
-                        onChange={(e) => setNewTask({ ...newTask, assigned_to: e.target.value })}
-                        className="w-full border border-gray-300 rounded-md px-4 py-3 sm:px-3 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-12 sm:h-10"
-                      >
-                        <option value="">Select team member...</option>
-                        {teamMembers.map((member) => (
-                          <option key={member.id} value={member.id}>
-                            {member.full_name || member.email}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {teamMembers.length === 0 ? (
-                          <p>No team members found. Create user accounts to assign tasks to others.</p>
-                        ) : teamMembers.length === 1 ? (
-                          <p>Only you are available. Have other team members sign up to assign tasks to them.</p>
-                        ) : (
-                          <p>{teamMembers.length} team members available for assignment.</p>
+                      <div className="divide-y divide-gray-100 border rounded-md bg-white">
+                        {teamMembers.length === 0 && (
+                          <div className="p-4 text-gray-500 text-center">No team members found.</div>
                         )}
+                        {teamMembers.map((member) => {
+                          const checked = newTask.assignees.includes(member.id);
+                          return (
+                            <div key={member.id} className="flex items-center px-4 py-3 gap-3">
+                              <Checkbox
+                                checked={checked}
+                                onChange={e => {
+                                  setNewTask(prev => {
+                                    const assignees = e.target.checked
+                                      ? [...prev.assignees, member.id]
+                                      : prev.assignees.filter(id => id !== member.id);
+                                    return { ...prev, assignees };
+                                  });
+                                }}
+                                label={
+                                  <div>
+                                    <span className="font-medium text-gray-900">{member.full_name || member.email}</span>
+                                    {member.role && (
+                                      <div className="text-xs text-gray-500">{member.role}{member.email && ` @${member.email.split('@')[1].split('.')[0]}`}</div>
+                                    )}
+                                  </div>
+                                }
+                              />
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
@@ -562,7 +572,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                   <div key={task.id} className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between p-4 sm:p-6 border rounded-lg">
                     <div className="flex-1">
                       <h3 className="font-medium text-base sm:text-sm mb-2">{task.name}</h3>
-                      <p className="text-sm text-gray-600">Assigned to: {task.assignee_name}</p>
+                      <p className="text-sm text-gray-600">
+                        Assigned to: {task.assignee_names && task.assignee_names.length > 0
+                          ? task.assignee_names.join(', ')
+                          : 'Unassigned'}
+                      </p>
                     </div>
                     <select
                       value={task.status}
