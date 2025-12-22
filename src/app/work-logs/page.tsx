@@ -272,7 +272,7 @@ export default function WorkLogsPage() {
           className="bg-pink-500 hover:bg-pink-600 text-white w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm" 
           onClick={() => setShowForm(!showForm)}
         >
-          <Plus className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />
+          <Plus className="h-5 w-5 sm:h-5 sm:w-5 mr-2" />
           {showForm ? 'Cancel' : 'Add Work Log'}
         </Button>
       </div>
@@ -388,7 +388,7 @@ export default function WorkLogsPage() {
             <div className="text-center py-8">
               <p className="text-pink-400 mb-4">No work logs submitted yet</p>
               <Button className="bg-pink-500 hover:bg-pink-600 text-white" onClick={() => setShowForm(true)}>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 Submit Your First Work Log
               </Button>
             </div>
@@ -399,7 +399,7 @@ export default function WorkLogsPage() {
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-4">
                     <div className="flex items-start space-x-3 flex-1">
                       <div className="p-2 bg-pink-100 rounded-full flex-shrink-0">
-                        <FileText className="h-5 w-5 sm:h-4 sm:w-4 text-pink-600" />
+                        <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-pink-600" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-pink-500 text-base sm:text-sm">
@@ -420,20 +420,20 @@ export default function WorkLogsPage() {
                           size="sm"
                           onClick={() => startEditWorkLog(log)}
                           disabled={!canEditWorkLog(log)}
-                          className={`${canEditWorkLog(log) ? "text-pink-600 hover:text-pink-700" : "text-gray-400 cursor-not-allowed"} h-9 w-9 sm:h-8 sm:w-8 p-0`}
+                          className={`${canEditWorkLog(log) ? "text-pink-600 hover:text-pink-700" : "text-gray-400 cursor-not-allowed"} h-9 w-9 sm:h-10 sm:w-10 p-0`}
                           title={canEditWorkLog(log) ? "Edit your work log" : "You can only edit your own work logs"}
                         >
-                          <Edit className="h-5 w-5 sm:h-4 sm:w-4" />
+                          <Edit className="h-5 w-5 sm:h-6 sm:w-6" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => deleteWorkLog(log.id, log)}
                           disabled={deletingId === log.id || !canEditWorkLog(log)}
-                          className={`${canEditWorkLog(log) ? "text-red-600 hover:text-red-700" : "text-gray-400 cursor-not-allowed"} h-9 w-9 sm:h-8 sm:w-8 p-0`}
+                          className={`${canEditWorkLog(log) ? "text-red-600 hover:text-red-700" : "text-gray-400 cursor-not-allowed"} h-9 w-9 sm:h-10 sm:w-10 p-0`}
                           title={canEditWorkLog(log) ? "Delete your work log" : "You can only delete your own work logs"}
                         >
-                          <Trash2 className="h-5 w-5 sm:h-4 sm:w-4" />
+                          <Trash2 className="h-5 w-5 sm:h-6 sm:w-6" />
                         </Button>
                       </div>
                     </div>
@@ -464,11 +464,11 @@ export default function WorkLogsPage() {
                       </div>
                       <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
                         <Button onClick={saveEditWorkLog} className="bg-pink-500 hover:bg-pink-600 h-12 sm:h-9 text-base sm:text-sm font-medium">
-                          <Save className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />
+                          <Save className="h-5 w-5 sm:h-5 sm:w-5 mr-2" />
                           Save
                         </Button>
                         <Button onClick={cancelEditWorkLog} variant="outline" className="h-12 sm:h-9 text-base sm:text-sm">
-                          <X className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />
+                          <X className="h-5 w-5 sm:h-5 sm:w-5 mr-2" />
                           Cancel
                         </Button>
                       </div>
@@ -479,7 +479,7 @@ export default function WorkLogsPage() {
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-black">
                           <div className="flex items-center">
-                            <User className="h-4 w-4 mr-2 flex-shrink-0" />
+                            <User className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
                             <span className="font-medium">{log.person}</span>
                             {canEditWorkLog(log) && (
                               <Badge variant="outline" className="ml-2 text-xs text-green-600 border-green-200">

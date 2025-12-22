@@ -137,7 +137,7 @@ export function EventsGrid() {
   return (
     <Card className="shadow-lg border-t-4 border-[#D91A7A]">
       <CardHeader className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between bg-gradient-to-r from-pink-50 to-white">
-        <CardTitle className="text-xl sm:text-lg font-bold text-[#D91A7A]">Recent Events</CardTitle>
+        <CardTitle className="text-xl sm:text-lg font-bold text-[#E91E63]">Recent Events</CardTitle>
         <Link href="/events/new" className="w-full sm:w-auto">
           <Button className="w-full sm:w-auto h-12 sm:h-9 text-base sm:text-sm bg-gradient-to-r from-[#D91A7A] to-[#E91E63] hover:from-[#C5197D] hover:to-[#D91A7A] shadow-md">
             <Plus className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />
