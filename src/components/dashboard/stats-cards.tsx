@@ -56,29 +56,33 @@ export function StatsCards() {
       title: 'Total Events',
       value: events.length.toString(),
       icon: Calendar,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100'
+      color: 'text-[#D91A7A]',
+      bgColor: 'bg-gradient-to-br from-pink-100 to-pink-50',
+      borderColor: 'border-l-4 border-[#D91A7A]'
     },
     {
       title: 'Active Tasks',
       value: taskStats.active.toString(),
       icon: Clock,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-100'
+      color: 'text-[#F26522]',
+      bgColor: 'bg-gradient-to-br from-orange-100 to-orange-50',
+      borderColor: 'border-l-4 border-[#F26522]'
     },
     {
       title: 'Completed Tasks',
       value: taskStats.completed.toString(),
       icon: CheckCircle,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100'
+      color: 'text-[#56C02B]',
+      bgColor: 'bg-gradient-to-br from-green-100 to-green-50',
+      borderColor: 'border-l-4 border-[#56C02B]'
     },
     {
       title: 'Team Members',
       value: teamCount.toString(),
       icon: Users,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100'
+      color: 'text-[#00BFE8]',
+      bgColor: 'bg-gradient-to-br from-cyan-100 to-cyan-50',
+      borderColor: 'border-l-4 border-[#00BFE8]'
     }
   ]
 
@@ -87,17 +91,17 @@ export function StatsCards() {
       {stats.map((stat, index) => {
         const Icon = stat.icon
         return (
-          <Card key={index}>
+          <Card key={index} className={`${stat.borderColor} ${stat.bgColor} shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 sm:pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 leading-tight">
+              <CardTitle className="text-xs sm:text-sm font-semibold text-gray-700 leading-tight">
                 {stat.title}
               </CardTitle>
-              <div className={`p-2 sm:p-2 rounded-full ${stat.bgColor}`}>
+              <div className={`p-2.5 sm:p-2 rounded-xl bg-white shadow-sm`}>
                 <Icon className={`h-5 w-5 sm:h-4 sm:w-4 ${stat.color}`} />
               </div>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="text-xl sm:text-2xl font-bold">{stat.value}</div>
+              <div className={`text-2xl sm:text-3xl font-bold ${stat.color}`}>{stat.value}</div>
             </CardContent>
           </Card>
         )

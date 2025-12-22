@@ -56,9 +56,9 @@ export function EventsGrid() {
   }
 
   const statusColors = {
-    active: 'bg-green-100 text-green-800',
-    completed: 'bg-gray-100 text-gray-800',
-    upcoming: 'bg-blue-100 text-blue-800'
+    active: 'bg-[#56C02B] text-white font-semibold',
+    completed: 'bg-gray-400 text-white font-semibold',
+    upcoming: 'bg-[#00BFE8] text-white font-semibold'
   }
 
   const handleDeleteEvent = async (eventId: string, eventName: string) => {
@@ -135,11 +135,11 @@ export function EventsGrid() {
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-        <CardTitle className="text-xl sm:text-lg">Recent Events</CardTitle>
+    <Card className="shadow-lg border-t-4 border-[#D91A7A]">
+      <CardHeader className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between bg-gradient-to-r from-pink-50 to-white">
+        <CardTitle className="text-xl sm:text-lg font-bold text-[#D91A7A]">Recent Events</CardTitle>
         <Link href="/events/new" className="w-full sm:w-auto">
-          <Button className="w-full sm:w-auto h-12 sm:h-9 text-base sm:text-sm">
+          <Button className="w-full sm:w-auto h-12 sm:h-9 text-base sm:text-sm bg-gradient-to-r from-[#D91A7A] to-[#E91E63] hover:from-[#C5197D] hover:to-[#D91A7A] shadow-md">
             <Plus className="h-5 w-5 sm:h-4 sm:w-4 mr-2" />
             New Event
           </Button>
@@ -163,11 +163,11 @@ export function EventsGrid() {
               const stats = eventStats[event.id] || { tasksCount: 0 }
               
               return (
-                <div key={event.id} className="border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow">
+                <div key={event.id} className="border-2 border-pink-100 rounded-xl p-4 sm:p-6 hover:shadow-xl hover:border-[#D91A7A]/30 transition-all duration-300 bg-gradient-to-br from-white to-pink-50/30">
                   <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                     <div className="flex-1">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
-                        <h3 className="text-lg font-semibold text-gray-900 leading-tight">
+                        <h3 className="text-lg font-bold text-gray-900 leading-tight">
                           {event.name}
                         </h3>
                         <Badge className={statusColors[status as keyof typeof statusColors]}>
@@ -175,20 +175,20 @@ export function EventsGrid() {
                         </Badge>
                       </div>
                       <p className="text-gray-600 text-sm sm:text-base mb-4 leading-relaxed">{event.description}</p>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-500">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-600 font-medium">
                         <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-2" />
+                          <Calendar className="h-4 w-4 mr-2 text-[#D91A7A]" />
                           {new Date(event.date).toLocaleDateString()}
                         </div>
                         <div className="flex items-center">
-                          <Users className="h-4 w-4 mr-2" />
+                          <Users className="h-4 w-4 mr-2 text-[#00BFE8]" />
                           {stats.tasksCount} tasks
                         </div>
                       </div>
                     </div>
                     <div className="flex flex-row sm:flex-col gap-2 sm:gap-3 sm:items-end">
                       <Link href={`/events/${event.id}`} className="flex-1 sm:flex-none">
-                        <Button variant="outline" className="w-full sm:w-auto h-11 sm:h-9 text-sm font-medium">
+                        <Button variant="default" className="w-full sm:w-auto h-11 sm:h-9 text-sm font-semibold">
                           View Details
                         </Button>
                       </Link>
@@ -196,16 +196,16 @@ export function EventsGrid() {
                         <Link href={`/events/${event.id}/edit`}>
                           <Button
                             variant="outline"
-                            className="h-11 w-11 sm:h-12 sm:w-12 p-0 border-pink-200 sm:bg-pink-50 sm:hover:bg-pink-100 sm:border-2 sm:shadow-sm sm:transition sm:duration-150 sm:ease-in-out sm:flex sm:items-center sm:justify-center"
+                            className="h-11 w-11 sm:h-12 sm:w-12 p-0 border-[#00BFE8] border-2 bg-gradient-to-br from-cyan-50 to-cyan-100 hover:from-cyan-100 hover:to-cyan-200 shadow-md transition duration-150 ease-in-out flex items-center justify-center"
                           >
-                            <Edit className="h-5 w-5 sm:h-6 sm:w-6 text-pink-500" />
+                            <Edit className="h-5 w-5 sm:h-6 sm:w-6 text-[#00BFE8]" />
                           </Button>
                         </Link>
                         <Button
                           variant="outline"
                           onClick={() => handleDeleteEvent(event.id, event.name)}
                           disabled={deletingId === event.id}
-                          className="text-red-600 hover:text-red-700 sm:bg-red-50 sm:hover:bg-red-100 h-11 w-11 sm:h-12 sm:w-12 p-0 border-pink-200 sm:border-2 sm:shadow-sm sm:transition sm:duration-150 sm:ease-in-out sm:flex sm:items-center sm:justify-center"
+                          className="text-red-600 hover:text-red-700 bg-gradient-to-br from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 h-11 w-11 sm:h-12 sm:w-12 p-0 border-red-400 border-2 shadow-md transition duration-150 ease-in-out flex items-center justify-center"
                         >
                           <Trash2 className="h-5 w-5 sm:h-6 sm:w-6" />
                         </Button>

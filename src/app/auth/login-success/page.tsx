@@ -22,7 +22,7 @@ export default function LoginSuccessPage() {
       <img
         src="/Login_character_login_successful_20251214101012.gif"
         alt="Login Successful Animation"
-        className="w-48 h-48"
+        className="w-80 h-80"
         style={{ margin: "0 auto" }}
       />
     </div>

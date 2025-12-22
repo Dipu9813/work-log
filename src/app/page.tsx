@@ -14,20 +14,23 @@ export default function Home() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      <div className="flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-base sm:text-base text-gray-600 mt-2">{config.welcome_message}</p>
+      {/* Hero Section with Gradient */}
+      <div className="bg-gradient-hult rounded-2xl p-6 sm:p-8 shadow-xl">
+        <div className="flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">Dashboard</h1>
+            <p className="text-base sm:text-base text-white/90 mt-2">{config.welcome_message}</p>
+          </div>
+          {config.show_setup_guide && hasPermission('manage_config') && (
+            <Link href="/setup" className="w-full sm:w-auto">
+              <Button variant="outline" className="flex items-center justify-center gap-2 w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm bg-white hover:bg-white/90 text-primary border-0">
+                <Settings className="h-5 w-5 sm:h-4 sm:w-4" />
+                Setup Guide
+                <ExternalLink className="h-4 w-4 sm:h-3 sm:w-3" />
+              </Button>
+            </Link>
+          )}
         </div>
-        {config.show_setup_guide && hasPermission('manage_config') && (
-          <Link href="/setup" className="w-full sm:w-auto">
-            <Button variant="outline" className="flex items-center justify-center gap-2 w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm">
-              <Settings className="h-5 w-5 sm:h-4 sm:w-4" />
-              Setup Guide
-              <ExternalLink className="h-4 w-4 sm:h-3 sm:w-3" />
-            </Button>
-          </Link>
-        )}
       </div>
 
       <StatsCards />

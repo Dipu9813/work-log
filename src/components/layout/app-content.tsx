@@ -28,31 +28,36 @@ export function AppContent({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-pink-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-white to-purple-50">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-[#D91A7A]"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <div className="h-20 w-20 bg-gradient-to-br from-[#D91A7A] to-[#E91E63] rounded-full opacity-20 animate-pulse"></div>
+          </div>
+        </div>
       </div>
     )
   }
 
   // Show auth pages without navbar
   if (isAuthPage) {
-    return <div className="min-h-screen bg-white">{children}</div>
+    return <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">{children}</div>
   }
 
   // Show protected content with navbar
   if (user) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
         {/* Top navbar hidden on mobile */}
         <div className="hidden sm:block">
           <Navbar />
         </div>
         {/* Mobile logo and profile avatar on the same row */}
-        <div className="sm:hidden flex items-center justify-between pt-4 pb-2 px-4">
+        <div className="sm:hidden flex items-center justify-between pt-4 pb-2 px-4 bg-gradient-to-r from-[#C5197D] to-[#E91E63]">
           <img
             src="/hult-logo.jpg"
             alt="Hult Logo"
-            className="h-12 w-auto object-contain drop-shadow"
+            className="h-12 w-auto object-contain drop-shadow-lg bg-white rounded-lg p-1"
             style={{ maxWidth: 80 }}
           />
           <div>

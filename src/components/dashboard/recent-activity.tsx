@@ -42,13 +42,14 @@ export function RecentActivity() {
     action: `submitted work log: ${log.description.slice(0, 40)}${log.description.length > 40 ? '...' : ''}`,
     time: getTimeAgo(log.created_at),
     icon: FileText,
-    color: 'text-blue-600'
+    color: 'text-[#D91A7A]',
+    bgColor: 'bg-gradient-to-br from-pink-100 to-pink-50'
   }))
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg sm:text-base">Recent Activity</CardTitle>
+    <Card className="shadow-lg border-t-4 border-[#D91A7A]">
+      <CardHeader className="bg-gradient-to-r from-pink-50 to-white">
+        <CardTitle className="text-lg sm:text-base font-bold text-[#D91A7A]">Recent Activity</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4 sm:space-y-6">
@@ -60,22 +61,22 @@ export function RecentActivity() {
             recentActivities.map((activity) => {
               const Icon = activity.icon
               return (
-                <div key={activity.id} className="flex items-start space-x-4">
-                  <div className={`p-2 sm:p-2 rounded-full bg-gray-100 flex-shrink-0`}>
+                <div key={activity.id} className="flex items-start space-x-4 hover:bg-pink-50/50 p-2 rounded-lg transition-all">
+                  <div className={`p-2.5 sm:p-2 rounded-xl ${activity.bgColor} shadow-sm flex-shrink-0`}>
                     <Icon className={`h-5 w-5 sm:h-4 sm:w-4 ${activity.color}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-base sm:text-sm font-medium text-gray-900 mb-1">
+                    <p className="text-base sm:text-sm font-semibold text-gray-800 mb-1">
                       {activity.user}
                     </p>
-                    <p className="text-sm sm:text-xs text-gray-500 leading-relaxed">
+                    <p className="text-sm sm:text-xs text-gray-600 leading-relaxed">
                       {activity.action}
                     </p>
                     <p className="text-xs text-gray-400 mt-2 sm:hidden">
                       {activity.time}
                     </p>
                   </div>
-                  <div className="text-xs text-gray-400 hidden sm:block flex-shrink-0">
+                  <div className="text-xs text-[#D91A7A] font-medium hidden sm:block flex-shrink-0">
                     {activity.time}
                   </div>
                 </div>
